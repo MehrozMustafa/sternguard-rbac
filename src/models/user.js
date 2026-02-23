@@ -9,7 +9,7 @@ const User = sequelize.define("User", {
 });
 
 // Association: a User has one Role
-User.belongsTo(Role, { foreignKey: "roleId", as: "role" });
+User.belongsTo(Role, { as: "role", foreignKey: "roleId" });
 
 module.exports = User;
 
