@@ -17,3 +17,6 @@ build/
 
 # optional
 coverage/
+
+test/
+routes.json

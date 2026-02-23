@@ -1,12 +1,26 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { login, getMehroz } = require('../controllers/userController');
-const authMiddleware = require('../middlewares/authMiddleware');
-const rbacMiddleware = require('../middlewares/rbacMiddleware');
+const auth = require("../middlewares/authMiddleware");
+const rbac = require("../middlewares/rbacMiddleware");
+const {
+  login,
+  getProtected,
+  createUser,
+  getUsers,
+  updateUser,
+  deleteUser
+} = require("../controllers/userController");
 
-router.post('/login', login);
+// Auth
+router.post("/login", login);
 
-// Protect /get with auth + RBAC middleware (only admin)
-router.get('/get', authMiddleware, rbacMiddleware('admin'), getMehroz);
+// Example protected route
+router.get("/get", auth, rbac("read:any_user"), getProtected);
+
+// User CRUD
+router.post("/users", auth, rbac("create:any_user"), createUser);
+router.get("/users", auth, rbac("read:any_user"), getUsers);
+router.put("/users/:id", auth, rbac("update:any_user"), updateUser);
+router.delete("/users/:id", auth, rbac("delete:any_user"), deleteUser);
 
 module.exports = router;

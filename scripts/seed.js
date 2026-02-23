@@ -1,42 +1,48 @@
-const mongoose = require('mongoose');
-const connectDB = require('../src/config/db');
-const Permission = require('../src/models/permission');
-const Role = require('../src/models/role');
-const User = require('../src/models/user');
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+const bcrypt = require("bcryptjs");
+const User = require("../src/models/user");
+const Role = require("../src/models/role");
+const Permission = require("../src/models/permission");
+const connectDB = require("../src/config/db");
+
+dotenv.config();
 
 const seed = async () => {
-    await connectDB();
+  await connectDB();
 
-    // Clear existing data
-    await Permission.deleteMany();
-    await Role.deleteMany();
-    await User.deleteMany();
+  // Cleanup first
+  await User.deleteMany();
+  await Role.deleteMany();
+  await Permission.deleteMany();
 
-    // Create permissions
-    // const readUsers = await Permission.create({ name: 'read:any_user', description: 'Read any user' });
-    // const editUsers = await Permission.create({ name: 'edit:any_user', description: 'Edit any user' });
-    const deleteUsers = await Permission.create({ name: 'delete:any_user', description: 'Delete any user' });
+  // Permissions
+  const readUsers = await Permission.create({ name: "read:any_user" });
+  const createUsers = await Permission.create({ name: "create:any_user" });
+  const updateUsers = await Permission.create({ name: "update:any_user" });
+  const deleteUsers = await Permission.create({ name: "delete:any_user" });
 
-    // permissions
-    const readUsers = await Permission.create({ name: 'read:any_user', description: 'Can read any user' });
-    const editUsers = await Permission.create({ name: 'edit:any_user', description: 'Can edit any user' });
+  // Role
+  const adminRole = await Role.create({
+    name: "admin",
+    permissions: [readUsers._id, createUsers._id, updateUsers._id, deleteUsers._id]
+  });
 
-    // Create roles
-    // const adminRole = await Role.create({ name: 'admin', permissions: [readUsers._id, editUsers._id, deleteUsers._id] });
-    // roles
-    const adminRole = await Role.create({ name: 'admin', permissions: [readUsers._id, editUsers._id] });
-    const editorRole = await Role.create({ name: 'editor', permissions: [readUsers._id, editUsers._id] });
+  // Admin User
+  const hashedPassword = await bcrypt.hash("123456", 10);
+  const adminUser = await User.create({
+    name: "Admin",
+    email: "admin@test.com",
+    password: hashedPassword,
+    roles: [adminRole._id]
+  });
 
-    // Create a user
-    await User.create({
-        name: 'Mehroz',
-        email: 'mehroz@example.com',
-        password: 'password123', // later hash this for production
-        roles: [adminRole._id]
-    });
+  console.log("Seed completed:", {
+    user: adminUser,
+    role: adminRole
+  });
 
-    console.log('Database seeded!');
-    process.exit();
+  process.exit();
 };
 
 seed();

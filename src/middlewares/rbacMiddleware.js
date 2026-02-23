@@ -29,4 +29,20 @@ const rbacMiddleware = (requiredPermission) => {
     };
 };
 
-module.exports = rbacMiddleware;
+module.exports = (permissionName) => {
+  return (req, res, next) => {
+    if (!req.user || !req.user.roles) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const userPermissions = req.user.roles
+      .flatMap(role => role.permissions || [])
+      .map(p => p.name);
+
+    if (!userPermissions.includes(permissionName)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    next();
+  };
+};
