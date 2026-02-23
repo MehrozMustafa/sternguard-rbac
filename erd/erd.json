@@ -1,0 +1,42 @@
+{
+  "entities": [
+    {
+      "name": "User",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primary": true },
+        { "name": "name", "type": "string" },
+        { "name": "email", "type": "string" },
+        { "name": "password", "type": "string" }
+      ]
+    },
+    {
+      "name": "Role",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primary": true },
+        { "name": "name", "type": "string" }
+      ]
+    },
+    {
+      "name": "Permission",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primary": true },
+        { "name": "name", "type": "string" },
+        { "name": "description", "type": "string" }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "User",
+      "to": "Role",
+      "type": "many-to-many",
+      "field": "roles"
+    },
+    {
+      "from": "Role",
+      "to": "Permission",
+      "type": "many-to-many",
+      "field": "permissions"
+    }
+  ]
+}
