@@ -11,20 +11,31 @@ const {
 const { protect } = require("../middlewares/authMiddleware");
 const rbac = require("../middlewares/rbacMiddleware");
 
-// ------------------------
+
 // Public routes
-// ------------------------
+// Register new user
 router.post("/register", createUser);
+
+// Login user
 router.post("/login", loginUser);
 
-// ------------------------
 // Protected routes
-// ------------------------
+// Get current logged-in user
+// Requires authentication only
+router.get(
+  "/me",
+  protect,
+  getCurrentUser
+);
 
-// Get all users → only admin with "view_user" permission
-router.get("/", protect, rbac({ roles: ["admin"], permissions: ["view_user"] }), getUsers);
+// Get all users
+// Requires "view_user" permission
+router.get(
+  "/",
+  protect,
+  rbac({ permissions: ["view_user"] }),
+  getUsers
+);
 
-// Get current logged-in user info → any authenticated user
-router.get("/me", protect, getCurrentUser);
 
 module.exports = router;

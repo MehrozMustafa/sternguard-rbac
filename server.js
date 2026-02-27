@@ -12,6 +12,7 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 
 // Sync DB & start server
+//-> Objection instead of sequelize.
 sequelize.sync({ alter: true }).then(() => {
   console.log("Database synced");
   const PORT = process.env.PORT || 5000;

@@ -1,37 +1,36 @@
 const { User, Role, Permission } = require("../models");
 
-const rbac = ({ roles = [], permissions = [] }) => async (req, res, next) => {
+const rbac = ({ permissions = [] }) => async (req, res, next) => {
   try {
     const user = await User.findByPk(req.user.id, {
       include: {
         model: Role,
-        as: "role",               // must match User.belongsTo(Role, {as: "role"})
+        as: "role",
         include: {
           model: Permission,
-          as: "permissions"       // must match Role.belongsToMany(Permission, {as: "permissions"})
+          as: "Permissions"
         }
       }
     });
 
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user || !user.role)
+      return res.status(403).json({ error: "Access denied" });
 
-    // Check role
-    if (roles.length && (!user.role || !roles.includes(user.role.name))) {
-      return res.status(403).json({ error: "Access denied: insufficient role" });
-    }
+    if (permissions.length > 0) {
+      const userPermissions = user.role.Permissions.map(p => p.name);
 
-    // Check permissions
-    if (permissions.length) {
-      if (!user.role || !user.role.permissions) {
-        return res.status(403).json({ error: "Access denied: insufficient permissions" });
-      }
+      const hasPermission = permissions.every(p =>
+        userPermissions.includes(p)
+      );
 
-      const userPermissions = user.role.permissions.map((p) => p.name);
-      const hasPermission = permissions.every((p) => userPermissions.includes(p));
-      if (!hasPermission) return res.status(403).json({ error: "Access denied: insufficient permissions" });
+      if (!hasPermission)
+        return res.status(403).json({
+          error: "Access denied: insufficient permissions"
+        });
     }
 
     next();
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
