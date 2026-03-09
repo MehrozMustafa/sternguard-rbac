@@ -1,30 +1,36 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const Knex = require("knex");
+const { Model } = require("objection");
+
 dotenv.config();
 
-const { connectDB, sequelize } = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
+const knex = Knex({
+  client: "pg",
+  connection: process.env.DATABASE_URL,
+});
+
+Model.knex(knex);
+
+console.log("PostgreSQL connected");
+
 app.use("/api/users", userRoutes);
 
-// Test route
 app.get("/", (req, res) => {
   res.send("Sternguard RBAC API is running!");
 });
 
-// Connect to DB
-connectDB();
+const PORT = process.env.PORT || 5000;
 
-// Sync Sequelize models (optional: { force: true } to reset tables)
-sequelize.sync({ alter: true }).then(() => {
-  console.log("Database synced with Sequelize models");
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
 module.exports = app;

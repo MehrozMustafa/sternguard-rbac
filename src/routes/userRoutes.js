@@ -13,29 +13,18 @@ const rbac = require("../middlewares/rbacMiddleware");
 
 
 // Public routes
-// Register new user
 router.post("/register", createUser);
-
-// Login user
 router.post("/login", loginUser);
 
-// Protected routes
-// Get current logged-in user
-// Requires authentication only
-router.get(
-  "/me",
-  protect,
-  getCurrentUser
-);
 
-// Get all users
-// Requires "view_user" permission
+// Protected routes
+router.get("/me", protect, getCurrentUser);
+
 router.get(
   "/",
   protect,
-  rbac({ permissions: ["view_user"] }),
+  rbac,
   getUsers
 );
-
 
 module.exports = router;

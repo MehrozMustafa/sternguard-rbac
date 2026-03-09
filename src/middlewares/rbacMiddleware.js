@@ -1,39 +1,44 @@
-const { User, Role, Permission } = require("../models");
+const { User } = require("../models");
+ // or require("../models/user") depending on your structure
 
-const rbac = ({ permissions = [] }) => async (req, res, next) => {
+const methodPermissionMap = {
+  GET: "view",
+  POST: "create",
+  PUT: "update",
+  PATCH: "update",
+  DELETE: "delete",
+};
+
+const rbac = async (req, res, next) => {
   try {
-    const user = await User.findByPk(req.user.id, {
-      include: {
-        model: Role,
-        as: "role",
-        include: {
-          model: Permission,
-          as: "Permissions"
-        }
-      }
-    });
+    const user = await User.query()
+      .findById(req.user.id)
+      .withGraphFetched("role.permissions");
 
-    if (!user || !user.role)
-      return res.status(403).json({ error: "Access denied" });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-    if (permissions.length > 0) {
-      const userPermissions = user.role.Permissions.map(p => p.name);
+    // Example: /api/users -> users -> user
+    const entity = req.baseUrl.split("/").pop().slice(0, -1);
 
-      const hasPermission = permissions.every(p =>
-        userPermissions.includes(p)
-      );
+    const action = methodPermissionMap[req.method];
 
-      if (!hasPermission)
-        return res.status(403).json({
-          error: "Access denied: insufficient permissions"
-        });
+    const requiredPermission = `${action}_${entity}`;
+
+    const userPermissions = user.role.permissions.map(p => p.name);
+
+    if (!userPermissions.includes(requiredPermission)) {
+      return res.status(403).json({
+        message: "Forbidden",
+        requiredPermission,
+      });
     }
 
     next();
-
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ message: "RBAC check failed" });
   }
 };
 

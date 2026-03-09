@@ -1,20 +1,27 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const { Model } = require("objection");
+const Knex = require("knex");
+
 dotenv.config();
 
-const sequelize = require("./src/config/db");
 const userRoutes = require("./src/routes/userRoutes");
 
 const app = express();
 app.use(express.json());
 
-// Routes
+const knex = Knex({
+  client: "pg",
+  connection: process.env.DATABASE_URL,
+});
+
+Model.knex(knex);
+
 app.use("/api/users", userRoutes);
 
-// Sync DB & start server
-//-> Objection instead of sequelize.
-sequelize.sync({ alter: true }).then(() => {
-  console.log("Database synced");
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log("PostgreSQL connected");
+  console.log(`Server running on port ${PORT}`);
 });
