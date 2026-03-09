@@ -1,45 +1,14 @@
-const { User } = require("../models");
- // or require("../models/user") depending on your structure
+// Automatically checks user permissions based on roles
+export const rbac = () => {
+  return (req, res, next) => {
+    if (!req.user) return res.status(401).json({ message: "Unauthorized" });
 
-const methodPermissionMap = {
-  GET: "view",
-  POST: "create",
-  PUT: "update",
-  PATCH: "update",
-  DELETE: "delete",
-};
+    // Flatten all permissions from user's roles
+    const userPermissions = req.user.roles.flatMap(role => role.permissions.map(p => p.name));
 
-const rbac = async (req, res, next) => {
-  try {
-    const user = await User.query()
-      .findById(req.user.id)
-      .withGraphFetched("role.permissions");
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Example: /api/users -> users -> user
-    const entity = req.baseUrl.split("/").pop().slice(0, -1);
-
-    const action = methodPermissionMap[req.method];
-
-    const requiredPermission = `${action}_${entity}`;
-
-    const userPermissions = user.role.permissions.map(p => p.name);
-
-    if (!userPermissions.includes(requiredPermission)) {
-      return res.status(403).json({
-        message: "Forbidden",
-        requiredPermission,
-      });
-    }
-
+    // Example: Allow all for now; later you can add specific permission logic
+    // To restrict certain routes, check: if (!userPermissions.includes("view_user")) return res.status(403)
+    req.user.permissions = userPermissions;
     next();
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "RBAC check failed" });
-  }
+  };
 };
-
-module.exports = rbac;

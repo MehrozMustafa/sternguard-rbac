@@ -1,9 +1,6 @@
-const User = require("./user");
-const Role = require("./role");
-const Permission = require("./permission");
+// src/models/index.js
+import User from "./user.js";
+import Role from "./role.js";
+import Permission from "./permission.js";
 
-// Many-to-many for Role-Permission
-Role.belongsToMany(Permission, { through: "RolePermissions", foreignKey: "roleId" });
-Permission.belongsToMany(Role, { through: "RolePermissions", foreignKey: "permissionId" });
-
-module.exports = { User, Role, Permission };
+export { User, Role, Permission };  // these are now named exports

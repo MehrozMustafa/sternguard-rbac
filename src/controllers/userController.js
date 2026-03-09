@@ -1,129 +1,69 @@
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { User, Role } = require("../models");
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import User from "../models/user.js";
+import Role from "../models/role.js";
 
-const generateToken = (user) =>
-  jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
+const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 
-// Register user
-exports.createUser = async (req, res) => {
-  const { username, email, password, roleId } = req.body;
-
+// Create a new user
+export const createUser = async (req, res) => {
   try {
-    // Check if user already exists
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) return res.status(400).json({ error: "Email already in use" });
+    const { username, email, password } = req.body;
+    if (!username || !email || !password)
+      return res.status(400).json({ message: "All fields are required" });
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Handle role
-    try {
-      // Check if role exists
-      const role = await Role.findByPk(roleId);
-      if (!role) return res.status(400).json({ error: "Invalid roleId" });
-
-      const hashed = await bcrypt.hash(password, 10);
-
-      // Create user with roleId
-      const user = await User.create({ username, email, password: hashed, roleId });
-
-      res.status(201).json({ message: "User created", user });
-    } catch (error) {
-      if (error.name === "SequelizeValidationError") {
-        return res.status(400).json({
-          error: error.errors.map((e) => e.message)
-        });
-      }
-      console.error(error); // log full error for debugging
-      res.status(500).json({ error: "Server error" });
-    }
-
-    if (roleId) {
-      // Validate provided roleId
-      role = await Role.findByPk(roleId);
-      if (!role) return res.status(400).json({ error: "Invalid roleId" });
-    } else {
-      // Assign default role if none provided
-      role = await Role.findOne({ where: { name: "user" } });
-    }
-
-    // Create user with proper roleId
-    const user = await User.create({
+    const user = await User.query().insert({
       username,
       email,
       password: hashedPassword,
-      roleId: role ? role.id : null
     });
 
-    res.status(201).json({
-      message: "User created successfully",
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: role ? role.name : null
-      }
-    });
-  } catch (error) {
-    if (error.name === "SequelizeValidationError") {
-      return res.status(400).json({
-        error: error.errors.map((e) => e.message)
-      });
-    }
-    res.status(500).json({ error: "Server error" });
+    return res.status(201).json({ message: "User created", user });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
-
 
 // Login user
-exports.loginUser = async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) return res.status(400).json({ error: "Email and password required" });
-
+export const loginUser = async (req, res) => {
   try {
-    const user = await User.findOne({ where: { email }, include: { model: Role, as: "role" } });
-    if (!user) return res.status(404).json({ error: "User not found" });
+    const { email, password } = req.body;
+    // userController.js login
+    const user = await User.query().findOne({ email: req.body.email });
+    if (!user) return res.status(401).json({ message: "Invalid credentials" });
+      
+    const isMatch = await bcrypt.compare(req.body.password, user.password);
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ error: "Invalid password" });
+    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    const token = generateToken(user);
-    res.json({ token });
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1d" });
+    return res.json({ token });
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
-
-// Get all users (admin only)
-// Get all users
-exports.getUsers = async (req, res) => {
-  try {
-    const users = await User.findAll({
-      include: {
-        model: Role,
-        as: "role",
-        required: false // important: allows users with no role
-      }
-    });
-    res.json(users);
-  } catch (err) {
-    console.error(err); // log error for debugging
-    res.status(500).json({ error: "Server error" });
-  }
-};
-
 
 // Get current logged-in user
-exports.getCurrentUser = async (req, res) => {
+export const getCurrentUser = async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id, { include: { model: Role, as: "role" } });
-    if (!user) return res.status(404).json({ error: "User not found" });
-    res.json(user);
+    const user = await User.query().findById(req.user.id).withGraphFetched("roles.permissions");
+    return res.json(user);
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get all users
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.query().withGraphFetched("roles.permissions");
+    return res.json(users);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
   }
 };

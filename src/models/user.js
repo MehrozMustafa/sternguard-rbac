@@ -1,15 +1,21 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/db");
-const Role = require("./role");
+import { Model } from "objection";
+import Role from "./role.js";
 
-const User = sequelize.define("User", {
-  username: { type: DataTypes.STRING, allowNull: false },
-  email: { type: DataTypes.STRING, allowNull: false, unique: true },
-  password: { type: DataTypes.STRING, allowNull: false },
-});
+export default class User extends Model {
+  static tableName = "users";
 
-// Association: a User has one Role
-User.belongsTo(Role, { as: "role", foreignKey: "roleId" });
-
-module.exports = User;
-
+  static relationMappings = {
+    roles: {
+      relation: Model.ManyToManyRelation,
+      modelClass: Role,
+      join: {
+        from: "users.id",
+        through: {
+          from: "user_roles.userId",
+          to: "user_roles.roleId",
+        },
+        to: "roles.id",
+      },
+    },
+  };
+}

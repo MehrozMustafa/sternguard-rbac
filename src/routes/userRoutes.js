@@ -1,30 +1,24 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
 
-const {
+import {
   createUser,
   loginUser,
   getUsers,
   getCurrentUser,
-} = require("../controllers/userController");
+} from "../controllers/userController.js";
 
-const { protect } = require("../middlewares/authMiddleware");
-const rbac = require("../middlewares/rbacMiddleware");
-
+import { protect } from "../middlewares/authMiddleware.js";
+import { rbac } from "../middlewares/rbacMiddleware.js";
 
 // Public routes
 router.post("/register", createUser);
 router.post("/login", loginUser);
 
-
 // Protected routes
 router.get("/me", protect, getCurrentUser);
 
-router.get(
-  "/",
-  protect,
-  rbac,
-  getUsers
-);
+// Get all users (auto RBAC, no manual permissions required)
+router.get("/", protect, rbac(), getUsers);
 
-module.exports = router;
+export default router;

@@ -1,36 +1,31 @@
-const express = require("express");
-const dotenv = require("dotenv");
-const Knex = require("knex");
-const { Model } = require("objection");
-
+import express from "express";
+import dotenv from "dotenv";
 dotenv.config();
 
-const userRoutes = require("./routes/userRoutes");
+import userRoutes from "./routes/userRoutes.js";
+import { connectDB } from "./config/db.js";
 
 const app = express();
 
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const knex = Knex({
-  client: "pg",
-  connection: process.env.DATABASE_URL,
-});
-
-Model.knex(knex);
-
-console.log("PostgreSQL connected");
-
+// Routes
 app.use("/api/users", userRoutes);
 
+// Test route
 app.get("/", (req, res) => {
   res.send("Sternguard RBAC API is running!");
 });
 
-const PORT = process.env.PORT || 5000;
+// Connect to PostgreSQL via Knex
+connectDB()
+  .then(() => {
+    console.log("PostgreSQL connected via Knex/Objection");
+  })
+  .catch((err) => {
+    console.error("DB connection error:", err);
+  });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-module.exports = app;
+export default app;

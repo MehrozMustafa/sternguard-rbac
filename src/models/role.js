@@ -1,17 +1,21 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/db");
-const Permission = require("./permission");
+import { Model } from "objection";
+import Permission from "./permission.js";
 
-const Role = sequelize.define("Role", {
-  name: { type: DataTypes.STRING, allowNull: false, unique: true },
-});
+export default class Role extends Model {
+  static tableName = "roles";
 
-Role.belongsToMany(Permission, {
-  through: "RolePermissions",
-  as: "permissions",
-  foreignKey: "roleId",
-  otherKey: "permissionId"
-});
-
-
-module.exports = Role;
+  static relationMappings = {
+    permissions: {
+      relation: Model.ManyToManyRelation,
+      modelClass: Permission,
+      join: {
+        from: "roles.id",
+        through: {
+          from: "role_permissions.roleId",
+          to: "role_permissions.permissionId",
+        },
+        to: "permissions.id",
+      },
+    },
+  };
+}
