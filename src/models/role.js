@@ -1,21 +1,39 @@
 import { Model } from "objection";
-import Permission from "./permission.js";
+import { User } from "./user.js";
+import { Permission } from "./permission.js";
 
-export default class Role extends Model {
-  static tableName = "roles";
+export class Role extends Model {
+  static get tableName() {
+    return "roles";
+  }
 
-  static relationMappings = {
-    permissions: {
-      relation: Model.ManyToManyRelation,
-      modelClass: Permission,
-      join: {
-        from: "roles.id",
-        through: {
-          from: "role_permissions.roleId",
-          to: "role_permissions.permissionId",
+  static get relationMappings() {
+    return {
+      permissions: {
+        relation: Model.ManyToManyRelation,
+        modelClass: Permission,
+        join: {
+          from: "roles.id",
+          through: {
+            from: "role_permissions.roleId",
+            to: "role_permissions.permissionId",
+          },
+          to: "permissions.id",
         },
-        to: "permissions.id",
       },
-    },
-  };
+
+      users: {
+        relation: Model.ManyToManyRelation,
+        modelClass: User,
+        join: {
+          from: "roles.id",
+          through: {
+            from: "user_roles.roleId",
+            to: "user_roles.userId",
+          },
+          to: "users.id",
+        },
+      },
+    };
+  }
 }

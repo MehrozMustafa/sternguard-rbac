@@ -1,5 +1,7 @@
 import { Model } from "objection";
 
-export default class Permission extends Model {
-  static tableName = "permissions";
+export class Permission extends Model {
+  static get tableName() {
+    return "permissions";
+  }
 }

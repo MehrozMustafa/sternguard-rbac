@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import User from "../models/user.js";
-import Role from "../models/role.js";
+import { User } from "../models/user.js";
+import { Role } from "../models/role.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 
