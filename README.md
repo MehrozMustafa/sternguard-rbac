@@ -5,7 +5,7 @@ It demonstrates a **scalable and secure approach** for managing users, roles, an
 
 ---
 
-## 🔹 Features
+## Features
 
 * User authentication with **JWT tokens**
 * Role-based and permission-based access control
@@ -16,7 +16,7 @@ It demonstrates a **scalable and secure approach** for managing users, roles, an
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 sternguard-rbac/
@@ -45,7 +45,7 @@ sternguard-rbac/
 
 ---
 
-## ⚙️ Installation
+## Installation
 
 1. Clone the repository:
 
@@ -84,7 +84,7 @@ Server runs at `http://localhost:5000`.
 
 ---
 
-## 🚀 API Endpoints
+## API Endpoints
 
 ### 1. **Login**
 
@@ -127,7 +127,7 @@ Only users with the `read:any_user` permission (assigned via roles) can access t
 
 ---
 
-## 🔒 Security Notes
+## Security Notes
 
 * Passwords should be hashed in production using **bcrypt**.
 * JWT tokens should use a strong secret (`JWT_SECRET`) stored securely.
@@ -135,7 +135,7 @@ Only users with the `read:any_user` permission (assigned via roles) can access t
 
 ---
 
-## 💡 Contribution
+## Contribution
 
 Feel free to fork this repository and extend it:
 
@@ -145,6 +145,6 @@ Feel free to fork this repository and extend it:
 
 ---
 
-## 📄 License
+## License
 
 MIT License

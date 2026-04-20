@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
-import { User } from "../models/user.js"; // ✅ named import
+import { User } from "../models/user.js"; // named import
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 
-// 1️⃣ Protect routes: ensure user is logged in
+// Protect routes: ensure user is logged in
 export const protect = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -28,7 +28,7 @@ export const protect = async (req, res, next) => {
   }
 };
 
-// 2️⃣ Authorize: check if user has a specific permission
+// Authorize: check if user has a specific permission
 export const authorize = (permissionName) => {
   return (req, res, next) => {
     if (!req.user) return res.status(401).json({ message: "Unauthorized" });

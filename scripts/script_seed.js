@@ -4,7 +4,7 @@ import { User, Role, Permission } from "../models/index.js";
 
 export const seed = async () => {
   try {
-    console.log("🌱 Seeding database...");
+    console.log("Seeding database...");
 
     // Clear existing data (order matters)
     await knex("user_roles").del();
@@ -18,9 +18,7 @@ export const seed = async () => {
     await knex.raw(`ALTER SEQUENCE roles_id_seq RESTART WITH 1`);
     await knex.raw(`ALTER SEQUENCE permissions_id_seq RESTART WITH 1`);
 
-    // -------------------------
-    // 🔥 Permissions
-    // -------------------------
+    // Permissions
     const permissionsList = [
       // User
       "user:read",
@@ -61,15 +59,11 @@ export const seed = async () => {
       insertedPermissions.push(p);
     }
 
-    // -------------------------
-    // 🔥 Roles
-    // -------------------------
+    // Roles
     const adminRole = await Role.query().insert({ name: "Admin" });
     const userRole = await Role.query().insert({ name: "User" });
 
-    // -------------------------
-    // 🔥 Role ↔ Permissions
-    // -------------------------
+    // Role ↔ Permissions
 
     // Admin → ALL permissions
     await knex("role_permissions").insert(
@@ -89,9 +83,7 @@ export const seed = async () => {
       }
     ]);
 
-    // -------------------------
-    // 🔥 Admin User
-    // -------------------------
+    // Admin User
     const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
 
     const adminUser = await User.query().insert({
@@ -106,8 +98,8 @@ export const seed = async () => {
       role_id: adminRole.id
     });
 
-    console.log("✅ Seeding completed successfully!");
+    console.log("Seeding completed successfully!");
   } catch (err) {
-    console.error("❌ Seed error:", err);
+    console.error("Seed error:", err);
   }
 };

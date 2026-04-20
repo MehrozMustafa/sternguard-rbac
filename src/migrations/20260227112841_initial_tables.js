@@ -30,7 +30,7 @@ export async function up(knex) {
     table.integer("roleId").unsigned().notNullable().references("id").inTable("roles").onDelete("CASCADE");
     table.integer("permissionId").unsigned().notNullable().references("id").inTable("permissions").onDelete("CASCADE");
 
-    // ✅ Unique constraint for ON CONFLICT
+    // Unique constraint for ON CONFLICT
     table.unique(["roleId", "permissionId"]);
   });
 
@@ -40,7 +40,7 @@ export async function up(knex) {
     table.integer("userId").unsigned().notNullable().references("id").inTable("users").onDelete("CASCADE");
     table.integer("roleId").unsigned().notNullable().references("id").inTable("roles").onDelete("CASCADE");
 
-    // ✅ Unique constraint for ON CONFLICT
+    // Unique constraint for ON CONFLICT
     table.unique(["userId", "roleId"]);
   });
 }

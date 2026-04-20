@@ -5,7 +5,7 @@ export class User extends Model {
   static get tableName() {
     return "users";
   }
-
+//relation mapping..
   static get relationMappings() {
     return {
       roles: {
