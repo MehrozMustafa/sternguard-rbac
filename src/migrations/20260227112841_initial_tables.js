@@ -45,6 +45,20 @@ export async function up(knex) {
   });
 }
 
+export async function up(knex) {
+  await knex.schema.createTable("route_permissions", (table) => {
+    table.increments("id").primary();
+    table.string("method").notNullable();
+    table.string("route").notNullable();
+    table.string("permission").notNullable();
+    table.timestamps(true, true);
+  });
+}
+
+export async function down(knex) {
+  await knex.schema.dropTableIfExists("route_permissions");
+}
+
 export async function down(knex) {
   await knex.schema.dropTableIfExists("user_roles");
   await knex.schema.dropTableIfExists("role_permissions");

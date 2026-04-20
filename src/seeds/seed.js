@@ -1,16 +1,15 @@
-// src/seeds/seed.js
-import Knex from "knex";
+import { knex } from "../config/db.js";
 import { Model } from "objection";
-import knexConfig from "../config/knexfile.cjs";
 
 // import seeds dynamically
 import * as permissionsSeed from "./permissionsSeed.js";
 import * as rolesSeed from "./rolesSeed.js";
 import * as rolePermissionsSeed from "./rolePermissionsSeed.js";
 import * as usersSeed from "./usersSeed.js";
+import { seedRoutePermissions } from "./routePermissionsSeed.js";
 
 async function seedAll() {
-  const knex = Knex(knexConfig.development);
+  // bind SINGLE knex instance
   Model.knex(knex);
 
   try {
@@ -18,6 +17,7 @@ async function seedAll() {
     await rolesSeed.seed(knex);
     await rolePermissionsSeed.seed(knex);
     await usersSeed.seed(knex);
+    await seedRoutePermissions(knex);
   } catch (err) {
     console.error("Seeding failed:", err);
   } finally {

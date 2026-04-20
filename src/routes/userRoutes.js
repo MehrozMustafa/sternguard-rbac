@@ -12,14 +12,14 @@ import {
 import { protect } from "../middlewares/authMiddleware.js";
 import { rbac } from "../middlewares/rbacMiddleware.js";
 
-// Public
+// Public routes
 router.post("/register", createUser);
 router.post("/login", loginUser);
 
-// Authenticated
+// Protected routes
 router.get("/me", protect, getCurrentUser);
 
-// Admin (RBAC controlled)
+// RBAC-controlled routes
 router.get("/", protect, rbac(), getUsers);
 router.post("/", protect, rbac(), createUser);
 router.delete("/:id", protect, rbac(), deleteUser);
